@@ -1,0 +1,85 @@
+{
+  "name": "dig",
+  "displayName": "DNS Lookup (dig)",
+  "version": "1.0.0",
+  "category": "dns",
+  "description": "DNS lookup utility for querying DNS records",
+  "longDescription": "dig (Domain Information Groper) is a flexible tool for interrogating DNS name servers. It performs DNS lookups and displays the answers that are returned from the name servers.",
+  "riskLevel": "info",
+  "binary": "/usr/bin/dig",
+  "commandTemplate": ["dig", "{{recordType}}", "{{target}}", "@{{nameserver}}", "+noall", "+answer", "+authority", "+additional"],
+  "argsSchema": [
+    {
+      "name": "target",
+      "displayName": "Domain",
+      "description": "The domain name to query",
+      "type": "host",
+      "required": true,
+      "placeholder": "example.com"
+    },
+    {
+      "name": "recordType",
+      "displayName": "Record Type",
+      "description": "DNS record type to query",
+      "type": "select",
+      "required": false,
+      "default": "A",
+      "options": [
+        { "value": "A", "label": "A (IPv4)", "description": "IPv4 address records" },
+        { "value": "AAAA", "label": "AAAA (IPv6)", "description": "IPv6 address records" },
+        { "value": "MX", "label": "MX (Mail)", "description": "Mail exchange records" },
+        { "value": "NS", "label": "NS (Name Server)", "description": "Name server records" },
+        { "value": "TXT", "label": "TXT (Text)", "description": "Text records (SPF, DKIM, etc.)" },
+        { "value": "CNAME", "label": "CNAME (Alias)", "description": "Canonical name records" },
+        { "value": "SOA", "label": "SOA (Authority)", "description": "Start of authority records" },
+        { "value": "ANY", "label": "ANY (All)", "description": "All available records" }
+      ]
+    },
+    {
+      "name": "nameserver",
+      "displayName": "DNS Server",
+      "description": "DNS server to query (leave empty for default)",
+      "type": "string",
+      "required": false,
+      "default": "8.8.8.8",
+      "placeholder": "8.8.8.8"
+    }
+  ],
+  "requiresScope": false,
+  "timeout": 30000,
+  "resourceLimits": {
+    "memory": "64Mi",
+    "cpu": "0.1",
+    "pidsLimit": 10
+  },
+  "outputParser": "dig-text",
+  "outputFormat": "text",
+  "readOnlyFilesystem": true,
+  "noNewPrivileges": true,
+  "networkMode": "restricted",
+  "allowedEgress": ["8.8.8.8/32", "8.8.4.4/32", "1.1.1.1/32", "1.0.0.1/32"],
+  "prerequisites": [],
+  "safeUsageNotes": [
+    "DNS queries are passive and safe for any domain",
+    "No authentication or sensitive data involved"
+  ],
+  "exampleCommands": [
+    {
+      "description": "Look up A records",
+      "parameters": { "target": "example.com", "recordType": "A", "nameserver": "8.8.8.8" }
+    },
+    {
+      "description": "Check mail server records",
+      "parameters": { "target": "example.com", "recordType": "MX", "nameserver": "1.1.1.1" }
+    },
+    {
+      "description": "View SPF/DKIM records",
+      "parameters": { "target": "example.com", "recordType": "TXT", "nameserver": "8.8.8.8" }
+    }
+  ],
+  "references": [
+    "https://linux.die.net/man/1/dig",
+    "https://www.isc.org/bind/"
+  ],
+  "tags": ["dns", "lookup", "records", "discovery"]
+}

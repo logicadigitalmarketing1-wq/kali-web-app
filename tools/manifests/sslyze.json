@@ -1,0 +1,92 @@
+{
+  "name": "sslyze",
+  "displayName": "SSLyze TLS Scanner",
+  "version": "1.0.0",
+  "category": "tls-http",
+  "description": "Fast and comprehensive TLS/SSL configuration analyzer",
+  "longDescription": "SSLyze is a fast and powerful SSL/TLS scanning tool. It can analyze the SSL/TLS configuration of a server by connecting to it, in order to ensure that it uses strong encryption, valid certificates, and is not vulnerable to known TLS attacks.",
+  "riskLevel": "low",
+  "binary": "/usr/local/bin/sslyze",
+  "commandTemplate": ["sslyze", "--json_out=-", "{{certCheck}}", "{{protocols}}", "{{vulnCheck}}", "{{target}}:{{port}}"],
+  "argsSchema": [
+    {
+      "name": "target",
+      "displayName": "Target Host",
+      "description": "The target hostname or IP address",
+      "type": "host",
+      "required": true,
+      "placeholder": "example.com"
+    },
+    {
+      "name": "port",
+      "displayName": "Port",
+      "description": "TLS port to scan",
+      "type": "port",
+      "required": false,
+      "default": 443,
+      "portRange": { "min": 1, "max": 65535 }
+    },
+    {
+      "name": "certCheck",
+      "displayName": "Certificate Check",
+      "description": "Check certificate validity and chain",
+      "type": "boolean",
+      "required": false,
+      "default": true
+    },
+    {
+      "name": "protocols",
+      "displayName": "Protocol Scan",
+      "description": "Test supported SSL/TLS protocols",
+      "type": "boolean",
+      "required": false,
+      "default": true
+    },
+    {
+      "name": "vulnCheck",
+      "displayName": "Vulnerability Check",
+      "description": "Check for known TLS vulnerabilities (Heartbleed, etc.)",
+      "type": "boolean",
+      "required": false,
+      "default": true
+    }
+  ],
+  "requiresScope": true,
+  "timeout": 300000,
+  "resourceLimits": {
+    "memory": "256Mi",
+    "cpu": "0.25",
+    "pidsLimit": 30
+  },
+  "outputParser": "sslyze-json",
+  "outputFormat": "json",
+  "redactionRules": [
+    { "pattern": "-----BEGIN.*PRIVATE KEY-----", "replacement": "[PRIVATE KEY REDACTED]" }
+  ],
+  "readOnlyFilesystem": true,
+  "noNewPrivileges": true,
+  "networkMode": "restricted",
+  "prerequisites": [
+    "Target must be within authorized scope",
+    "TLS service must be accessible on target port"
+  ],
+  "safeUsageNotes": [
+    "This tool only performs TLS handshakes, it does not exploit vulnerabilities",
+    "Safe for production systems - only reads TLS configuration"
+  ],
+  "exampleCommands": [
+    {
+      "description": "Full TLS scan on HTTPS",
+      "parameters": { "target": "example.com", "port": 443, "certCheck": true, "protocols": true, "vulnCheck": true }
+    },
+    {
+      "description": "Quick certificate check only",
+      "parameters": { "target": "mail.example.com", "port": 465, "certCheck": true, "protocols": false, "vulnCheck": false }
+    }
+  ],
+  "references": [
+    "https://github.com/nabla-c0d3/sslyze",
+    "https://nabla-c0d3.github.io/sslyze/documentation/"
+  ],
+  "tags": ["tls", "ssl", "certificate", "encryption", "vulnerability"]
+}

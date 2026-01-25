@@ -1,0 +1,96 @@
+{
+  "name": "testssl",
+  "displayName": "testssl.sh TLS Analyzer",
+  "version": "1.0.0",
+  "category": "tls-http",
+  "description": "Comprehensive TLS/SSL testing tool that checks protocols, ciphers, and vulnerabilities",
+  "longDescription": "testssl.sh is a free command line tool which checks a server's service on any port for the support of TLS/SSL ciphers, protocols, as well as cryptographic flaws and vulnerabilities.",
+  "riskLevel": "low",
+  "binary": "/usr/local/bin/testssl.sh",
+  "commandTemplate": ["testssl.sh", "--jsonfile-pretty", "/dev/stdout", "{{checks}}", "{{severity}}", "{{target}}:{{port}}"],
+  "argsSchema": [
+    {
+      "name": "target",
+      "displayName": "Target Host",
+      "description": "The target hostname or IP address",
+      "type": "host",
+      "required": true,
+      "placeholder": "example.com"
+    },
+    {
+      "name": "port",
+      "displayName": "Port",
+      "description": "TLS port to test",
+      "type": "port",
+      "required": false,
+      "default": 443,
+      "portRange": { "min": 1, "max": 65535 }
+    },
+    {
+      "name": "checks",
+      "displayName": "Check Types",
+      "description": "Types of checks to perform",
+      "type": "select",
+      "required": false,
+      "default": "-p -s -f -U",
+      "options": [
+        { "value": "-p", "label": "Protocols Only", "description": "Check supported TLS/SSL protocols" },
+        { "value": "-p -s", "label": "Protocols + Ciphers", "description": "Protocols and cipher suites" },
+        { "value": "-p -s -f", "label": "Standard", "description": "Protocols, ciphers, and preferences" },
+        { "value": "-p -s -f -U", "label": "Full (with vulnerabilities)", "description": "Include vulnerability checks" }
+      ]
+    },
+    {
+      "name": "severity",
+      "displayName": "Minimum Severity",
+      "description": "Only show issues at this severity or higher",
+      "type": "select",
+      "required": false,
+      "default": "--severity LOW",
+      "options": [
+        { "value": "--severity LOW", "label": "Low+", "description": "Show all issues" },
+        { "value": "--severity MEDIUM", "label": "Medium+", "description": "Medium and higher" },
+        { "value": "--severity HIGH", "label": "High+", "description": "High and critical only" }
+      ]
+    }
+  ],
+  "requiresScope": true,
+  "timeout": 600000,
+  "resourceLimits": {
+    "memory": "256Mi",
+    "cpu": "0.5",
+    "pidsLimit": 50
+  },
+  "outputParser": "testssl-json",
+  "outputFormat": "json",
+  "redactionRules": [
+    { "pattern": "-----BEGIN.*PRIVATE KEY-----", "replacement": "[PRIVATE KEY REDACTED]" }
+  ],
+  "readOnlyFilesystem": true,
+  "noNewPrivileges": true,
+  "networkMode": "restricted",
+  "prerequisites": [
+    "Target must be within authorized scope",
+    "TLS service must be accessible on target port"
+  ],
+  "safeUsageNotes": [
+    "This tool only performs TLS handshakes and analysis",
+    "Safe for production systems - read-only testing",
+    "Full vulnerability checks take longer but are more comprehensive"
+  ],
+  "exampleCommands": [
+    {
+      "description": "Quick protocol check",
+      "parameters": { "target": "example.com", "port": 443, "checks": "-p", "severity": "--severity LOW" }
+    },
+    {
+      "description": "Full vulnerability assessment",
+      "parameters": { "target": "example.com", "port": 443, "checks": "-p -s -f -U", "severity": "--severity LOW" }
+    }
+  ],
+  "references": [
+    "https://testssl.sh/",
+    "https://github.com/drwetter/testssl.sh"
+  ],
+  "tags": ["tls", "ssl", "vulnerability", "cipher", "protocol"]
+}

@@ -1,0 +1,62 @@
+{
+  "name": "subfinder",
+  "displayName": "Subfinder",
+  "version": "1.0.0",
+  "category": "inventory",
+  "description": "Subdomain discovery tool using passive sources",
+  "longDescription": "Subfinder is a subdomain discovery tool that discovers valid subdomains for websites by using passive online sources. It has a simple modular architecture and is optimized for speed.",
+  "riskLevel": "low",
+  "binary": "/usr/local/bin/subfinder",
+  "commandTemplate": ["subfinder", "-d", "{{domain}}", "-silent", "-json", "-timeout", "{{timeout}}"],
+  "argsSchema": [
+    {
+      "name": "domain",
+      "displayName": "Domain",
+      "description": "Root domain to find subdomains for",
+      "type": "host",
+      "required": true,
+      "placeholder": "example.com"
+    },
+    {
+      "name": "timeout",
+      "displayName": "Timeout (seconds)",
+      "description": "Timeout for each source",
+      "type": "number",
+      "required": false,
+      "default": 30,
+      "min": 10,
+      "max": 120
+    }
+  ],
+  "requiresScope": true,
+  "timeout": 300000,
+  "resourceLimits": {
+    "memory": "256Mi",
+    "cpu": "0.25",
+    "pidsLimit": 30
+  },
+  "outputParser": "subfinder-json",
+  "outputFormat": "json",
+  "readOnlyFilesystem": true,
+  "noNewPrivileges": true,
+  "networkMode": "restricted",
+  "prerequisites": [
+    "Domain must be within authorized scope",
+    "Uses only passive sources (no active scanning)"
+  ],
+  "safeUsageNotes": [
+    "Passive reconnaissance only - no direct contact with target",
+    "Queries third-party data sources",
+    "Results may include historical or inactive subdomains"
+  ],
+  "exampleCommands": [
+    {
+      "description": "Find subdomains for a domain",
+      "parameters": { "domain": "example.com", "timeout": 30 }
+    }
+  ],
+  "references": [
+    "https://github.com/projectdiscovery/subfinder"
+  ],
+  "tags": ["subdomain", "discovery", "inventory", "reconnaissance", "passive"]
+}

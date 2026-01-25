@@ -1,0 +1,100 @@
+{
+  "name": "nmap-basic",
+  "displayName": "Nmap Port Scanner",
+  "version": "1.0.0",
+  "category": "network-diagnostics",
+  "description": "Network discovery and security auditing tool for port scanning and service detection",
+  "longDescription": "Nmap (Network Mapper) is a free and open-source utility for network discovery and security auditing. It uses raw IP packets to determine available hosts, services, operating systems, and firewall configurations.",
+  "riskLevel": "medium",
+  "binary": "/usr/bin/nmap",
+  "commandTemplate": ["nmap", "{{scanType}}", "-p", "{{ports}}", "{{timing}}", "-oX", "-", "{{target}}"],
+  "argsSchema": [
+    {
+      "name": "target",
+      "displayName": "Target Host",
+      "description": "The target hostname or IP address to scan",
+      "type": "host",
+      "required": true,
+      "placeholder": "example.com or 192.168.1.1"
+    },
+    {
+      "name": "ports",
+      "displayName": "Ports",
+      "description": "Port range to scan (e.g., 1-1000, 22,80,443)",
+      "type": "string",
+      "required": false,
+      "default": "1-1000",
+      "pattern": "^[0-9,-]+$",
+      "placeholder": "1-1000"
+    },
+    {
+      "name": "scanType",
+      "displayName": "Scan Type",
+      "description": "Type of port scan to perform",
+      "type": "select",
+      "required": false,
+      "default": "-sT",
+      "options": [
+        { "value": "-sT", "label": "TCP Connect", "description": "Full TCP connection (no root required)" },
+        { "value": "-sS", "label": "TCP SYN", "description": "Stealth SYN scan (requires root)" },
+        { "value": "-sU", "label": "UDP", "description": "UDP port scan" },
+        { "value": "-sV", "label": "Version Detection", "description": "Detect service versions" }
+      ]
+    },
+    {
+      "name": "timing",
+      "displayName": "Timing Template",
+      "description": "Scan timing (higher = faster but more detectable)",
+      "type": "select",
+      "required": false,
+      "default": "-T3",
+      "options": [
+        { "value": "-T1", "label": "Sneaky", "description": "Very slow, IDS evasion" },
+        { "value": "-T2", "label": "Polite", "description": "Slower, less bandwidth" },
+        { "value": "-T3", "label": "Normal", "description": "Default timing" },
+        { "value": "-T4", "label": "Aggressive", "description": "Faster, may be detected" }
+      ]
+    }
+  ],
+  "requiresScope": true,
+  "timeout": 600000,
+  "resourceLimits": {
+    "memory": "512Mi",
+    "cpu": "0.5",
+    "pidsLimit": 50
+  },
+  "outputParser": "nmap-xml",
+  "outputFormat": "xml",
+  "redactionRules": [
+    { "pattern": "password", "replacement": "[REDACTED]", "caseSensitive": false },
+    { "pattern": "secret", "replacement": "[REDACTED]", "caseSensitive": false }
+  ],
+  "keepCapabilities": ["CAP_NET_RAW"],
+  "readOnlyFilesystem": true,
+  "noNewPrivileges": true,
+  "networkMode": "restricted",
+  "prerequisites": [
+    "Target must be within authorized scope",
+    "Ensure you have written authorization for the scan"
+  ],
+  "safeUsageNotes": [
+    "Use TCP Connect (-sT) for minimal impact",
+    "Limit port ranges to reduce scan time",
+    "Use polite timing (-T2) for production systems"
+  ],
+  "exampleCommands": [
+    {
+      "description": "Quick scan of common ports",
+      "parameters": { "target": "example.com", "ports": "22,80,443", "scanType": "-sT", "timing": "-T3" }
+    },
+    {
+      "description": "Full port scan with version detection",
+      "parameters": { "target": "192.168.1.1", "ports": "1-65535", "scanType": "-sV", "timing": "-T4" }
+    }
+  ],
+  "references": [
+    "https://nmap.org/book/man.html",
+    "https://nmap.org/book/port-scanning-techniques.html"
+  ],
+  "tags": ["network", "ports", "discovery", "reconnaissance"]
+}

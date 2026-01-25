@@ -1,0 +1,105 @@
+{
+  "name": "curl-http",
+  "displayName": "HTTP Request (curl)",
+  "version": "1.0.0",
+  "category": "tls-http",
+  "description": "Make HTTP requests and inspect responses, headers, and TLS information",
+  "longDescription": "curl is a command-line tool for transferring data with URLs. This configuration focuses on HTTP/HTTPS inspection, allowing you to examine headers, response times, TLS certificates, and more.",
+  "riskLevel": "low",
+  "binary": "/usr/bin/curl",
+  "commandTemplate": ["curl", "-s", "-S", "-D", "-", "{{includeBody}}", "{{followRedirects}}", "{{method}}", "{{headers}}", "-w", "\\n---TIMING---\\ntime_namelookup: %{time_namelookup}\\ntime_connect: %{time_connect}\\ntime_appconnect: %{time_appconnect}\\ntime_pretransfer: %{time_pretransfer}\\ntime_starttransfer: %{time_starttransfer}\\ntime_total: %{time_total}\\nhttp_code: %{http_code}\\nssl_verify_result: %{ssl_verify_result}\\n", "{{url}}"],
+  "argsSchema": [
+    {
+      "name": "url",
+      "displayName": "URL",
+      "description": "The URL to request",
+      "type": "url",
+      "required": true,
+      "placeholder": "https://example.com"
+    },
+    {
+      "name": "method",
+      "displayName": "HTTP Method",
+      "description": "HTTP request method",
+      "type": "select",
+      "required": false,
+      "default": "-X GET",
+      "options": [
+        { "value": "-X GET", "label": "GET", "description": "Retrieve resource" },
+        { "value": "-X HEAD", "label": "HEAD", "description": "Headers only" },
+        { "value": "-X OPTIONS", "label": "OPTIONS", "description": "Check allowed methods" }
+      ]
+    },
+    {
+      "name": "includeBody",
+      "displayName": "Include Body",
+      "description": "Include response body in output",
+      "type": "select",
+      "required": false,
+      "default": "-o /dev/null",
+      "options": [
+        { "value": "-o /dev/null", "label": "No", "description": "Headers and timing only" },
+        { "value": "", "label": "Yes", "description": "Include full response body" }
+      ]
+    },
+    {
+      "name": "followRedirects",
+      "displayName": "Follow Redirects",
+      "description": "Follow HTTP redirects",
+      "type": "select",
+      "required": false,
+      "default": "",
+      "options": [
+        { "value": "", "label": "No", "description": "Stop at first response" },
+        { "value": "-L", "label": "Yes", "description": "Follow redirects (max 10)" }
+      ]
+    },
+    {
+      "name": "headers",
+      "displayName": "Custom Headers",
+      "description": "Custom HTTP headers (format: -H 'Name: Value')",
+      "type": "string",
+      "required": false,
+      "placeholder": "-H 'User-Agent: SecureScope'"
+    }
+  ],
+  "requiresScope": true,
+  "timeout": 60000,
+  "resourceLimits": {
+    "memory": "128Mi",
+    "cpu": "0.1",
+    "pidsLimit": 10
+  },
+  "outputParser": "curl-http",
+  "outputFormat": "text",
+  "redactionRules": [
+    { "pattern": "Authorization:\\s*[^\\n]+", "replacement": "Authorization: [REDACTED]", "caseSensitive": false },
+    { "pattern": "Cookie:\\s*[^\\n]+", "replacement": "Cookie: [REDACTED]", "caseSensitive": false },
+    { "pattern": "Set-Cookie:\\s*[^\\n]+", "replacement": "Set-Cookie: [REDACTED]", "caseSensitive": false }
+  ],
+  "readOnlyFilesystem": true,
+  "noNewPrivileges": true,
+  "networkMode": "restricted",
+  "prerequisites": [
+    "Target URL must be within authorized scope"
+  ],
+  "safeUsageNotes": [
+    "Only GET, HEAD, and OPTIONS methods are allowed (read-only)",
+    "Response body can be large - consider disabling for unknown targets"
+  ],
+  "exampleCommands": [
+    {
+      "description": "Check HTTP headers and timing",
+      "parameters": { "url": "https://example.com", "method": "-X GET", "includeBody": "-o /dev/null", "followRedirects": "" }
+    },
+    {
+      "description": "Full response with redirects",
+      "parameters": { "url": "https://example.com/page", "method": "-X GET", "includeBody": "", "followRedirects": "-L" }
+    }
+  ],
+  "references": [
+    "https://curl.se/docs/manpage.html",
+    "https://everything.curl.dev/"
+  ],
+  "tags": ["http", "https", "headers", "timing", "web"]
+}

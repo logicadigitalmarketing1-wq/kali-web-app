@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: securescope-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: securescope
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - securescope-network
+
+  # Redis for sessions and job queue
+  redis:
+    image: redis:7-alpine
+    container_name: securescope-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - securescope-network
+
+  # NestJS API
+  api:
+    build:
+      context: .
+      dockerfile: ./infra/docker/api.Dockerfile
+    container_name: securescope-api
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/securescope
+      REDIS_URL: redis://redis:6379
+      SESSION_SECRET: dev-session-secret-change-in-production-32chars
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      WEB_URL: http://localhost:3000
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app/apps/api
+      - ./packages:/app/packages
+      - ./tools:/app/tools
+      - /app/node_modules
+      - /app/apps/api/node_modules
+    networks:
+      - securescope-network
+    command: npm run dev:api
+
+  # Next.js Frontend
+  web:
+    build:
+      context: .
+      dockerfile: ./infra/docker/web.Dockerfile
+    container_name: securescope-web
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    volumes:
+      - ./apps/web:/app/apps/web
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
+    networks:
+      - securescope-network
+    command: npm run dev:web
+
+  # Executor Service
+  executor:
+    build:
+      context: .
+      dockerfile: ./infra/docker/executor.Dockerfile
+    container_name: securescope-executor
+    environment:
+      NODE_ENV: development
+      REDIS_URL: redis://redis:6379
+      API_URL: http://api:3001
+      DOCKER_SOCKET: /var/run/docker.sock
+      EXECUTOR_IMAGE: securescope/executor-sandbox:latest
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/executor:/app/apps/executor
+      - ./packages:/app/packages
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /app/node_modules
+      - /app/apps/executor/node_modules
+    networks:
+      - securescope-network
+    command: npm run dev:executor
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  securescope-network:
+    driver: bridge

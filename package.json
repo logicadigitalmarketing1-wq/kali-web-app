@@ -1,0 +1,39 @@
+{
+  "name": "securescope",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Security Assessment and Diagnostics Platform",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:api": "turbo run dev --filter=@securescope/api",
+    "dev:web": "turbo run dev --filter=@securescope/web",
+    "dev:executor": "turbo run dev --filter=@securescope/executor",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:api": "turbo run test --filter=@securescope/api",
+    "test:web": "turbo run test --filter=@securescope/web",
+    "test:e2e": "turbo run test:e2e",
+    "db:migrate": "npm run db:migrate --workspace=@securescope/api",
+    "db:generate": "npm run db:generate --workspace=@securescope/api",
+    "db:seed": "npm run db:seed --workspace=@securescope/api",
+    "db:studio": "npm run db:studio --workspace=@securescope/api",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "prettier": "^3.2.4",
+    "turbo": "^1.12.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "npm@10.2.0"
+}

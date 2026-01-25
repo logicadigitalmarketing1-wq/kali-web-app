@@ -1,0 +1,89 @@
+{
+  "name": "traceroute",
+  "displayName": "Traceroute",
+  "version": "1.0.0",
+  "category": "network-diagnostics",
+  "description": "Trace the network path to a destination host",
+  "longDescription": "Traceroute tracks the route packets taken from an IP network on their way to a given host. It utilizes the IP protocol's time to live (TTL) field and attempts to elicit an ICMP TIME_EXCEEDED response from each gateway along the path.",
+  "riskLevel": "low",
+  "binary": "/usr/bin/traceroute",
+  "commandTemplate": ["traceroute", "-m", "{{maxHops}}", "-w", "{{timeout}}", "{{protocol}}", "{{target}}"],
+  "argsSchema": [
+    {
+      "name": "target",
+      "displayName": "Target Host",
+      "description": "Destination hostname or IP address",
+      "type": "host",
+      "required": true,
+      "placeholder": "example.com"
+    },
+    {
+      "name": "maxHops",
+      "displayName": "Max Hops",
+      "description": "Maximum number of hops to trace",
+      "type": "number",
+      "required": false,
+      "default": 30,
+      "min": 1,
+      "max": 64
+    },
+    {
+      "name": "timeout",
+      "displayName": "Timeout (seconds)",
+      "description": "Wait time for each response",
+      "type": "number",
+      "required": false,
+      "default": 3,
+      "min": 1,
+      "max": 10
+    },
+    {
+      "name": "protocol",
+      "displayName": "Protocol",
+      "description": "Protocol to use for probes",
+      "type": "select",
+      "required": false,
+      "default": "-I",
+      "options": [
+        { "value": "-I", "label": "ICMP", "description": "Use ICMP ECHO" },
+        { "value": "-T", "label": "TCP", "description": "Use TCP SYN" },
+        { "value": "-U", "label": "UDP", "description": "Use UDP (default)" }
+      ]
+    }
+  ],
+  "requiresScope": true,
+  "timeout": 120000,
+  "resourceLimits": {
+    "memory": "64Mi",
+    "cpu": "0.1",
+    "pidsLimit": 10
+  },
+  "outputParser": "traceroute-text",
+  "outputFormat": "text",
+  "keepCapabilities": ["CAP_NET_RAW"],
+  "readOnlyFilesystem": true,
+  "noNewPrivileges": true,
+  "networkMode": "restricted",
+  "prerequisites": [
+    "Target must be within authorized scope"
+  ],
+  "safeUsageNotes": [
+    "Standard network diagnostic tool",
+    "ICMP mode may be blocked by firewalls",
+    "TCP mode can bypass some firewalls"
+  ],
+  "exampleCommands": [
+    {
+      "description": "Standard ICMP trace",
+      "parameters": { "target": "example.com", "maxHops": 30, "timeout": 3, "protocol": "-I" }
+    },
+    {
+      "description": "TCP trace for firewall bypass",
+      "parameters": { "target": "example.com", "maxHops": 20, "timeout": 2, "protocol": "-T" }
+    }
+  ],
+  "references": [
+    "https://linux.die.net/man/8/traceroute"
+  ],
+  "tags": ["network", "route", "path", "diagnostics", "hops"]
+}

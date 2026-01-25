@@ -1,0 +1,95 @@
+{
+  "name": "nikto",
+  "displayName": "Nikto Web Scanner",
+  "version": "1.0.0",
+  "category": "tls-http",
+  "description": "Web server scanner that checks for dangerous files, outdated software, and misconfigurations",
+  "longDescription": "Nikto is an Open Source web server scanner which performs comprehensive tests against web servers for multiple items, including over 6700 potentially dangerous files/programs, outdated versions, and version-specific problems.",
+  "riskLevel": "medium",
+  "binary": "/usr/bin/nikto",
+  "commandTemplate": ["nikto", "-h", "{{target}}", "-p", "{{port}}", "-Format", "json", "-o", "-", "{{tuning}}", "-maxtime", "{{timeout}}"],
+  "argsSchema": [
+    {
+      "name": "target",
+      "displayName": "Target Host",
+      "description": "The target hostname or IP address",
+      "type": "host",
+      "required": true,
+      "placeholder": "example.com"
+    },
+    {
+      "name": "port",
+      "displayName": "Port",
+      "description": "Web server port",
+      "type": "port",
+      "required": false,
+      "default": 80,
+      "portRange": { "min": 1, "max": 65535 }
+    },
+    {
+      "name": "tuning",
+      "displayName": "Scan Tuning",
+      "description": "Types of tests to include",
+      "type": "select",
+      "required": false,
+      "default": "-Tuning 123",
+      "options": [
+        { "value": "-Tuning 123", "label": "Quick (Low Noise)", "description": "File upload, interesting files, misc" },
+        { "value": "-Tuning 1234", "label": "Standard", "description": "Add injection tests" },
+        { "value": "-Tuning 123456789", "label": "Full", "description": "All tests (more noise)" }
+      ]
+    },
+    {
+      "name": "timeout",
+      "displayName": "Max Time (seconds)",
+      "description": "Maximum scan duration",
+      "type": "number",
+      "required": false,
+      "default": 300,
+      "min": 60,
+      "max": 600
+    }
+  ],
+  "requiresScope": true,
+  "timeout": 660000,
+  "resourceLimits": {
+    "memory": "512Mi",
+    "cpu": "0.5",
+    "pidsLimit": 50
+  },
+  "outputParser": "nikto-json",
+  "outputFormat": "json",
+  "redactionRules": [
+    { "pattern": "password", "replacement": "[REDACTED]", "caseSensitive": false },
+    { "pattern": "secret", "replacement": "[REDACTED]", "caseSensitive": false },
+    { "pattern": "api[_-]?key", "replacement": "[REDACTED]", "caseSensitive": false }
+  ],
+  "readOnlyFilesystem": true,
+  "noNewPrivileges": true,
+  "networkMode": "restricted",
+  "prerequisites": [
+    "Target must be within authorized scope",
+    "Web server must be accessible on target port",
+    "Written authorization required for vulnerability scanning"
+  ],
+  "safeUsageNotes": [
+    "This scanner makes many HTTP requests - may be logged by target",
+    "Use Quick tuning for initial assessment",
+    "Full scans may trigger security alerts on target"
+  ],
+  "exampleCommands": [
+    {
+      "description": "Quick scan on HTTP",
+      "parameters": { "target": "example.com", "port": 80, "tuning": "-Tuning 123", "timeout": 300 }
+    },
+    {
+      "description": "Standard scan on HTTPS",
+      "parameters": { "target": "example.com", "port": 443, "tuning": "-Tuning 1234", "timeout": 300 }
+    }
+  ],
+  "references": [
+    "https://cirt.net/Nikto2",
+    "https://github.com/sullo/nikto"
+  ],
+  "tags": ["web", "vulnerability", "scanner", "security"]
+}

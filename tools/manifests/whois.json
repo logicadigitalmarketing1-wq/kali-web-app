@@ -1,0 +1,56 @@
+{
+  "name": "whois",
+  "displayName": "WHOIS Lookup",
+  "version": "1.0.0",
+  "category": "inventory",
+  "description": "Query WHOIS databases for domain registration and ownership information",
+  "longDescription": "WHOIS is a query and response protocol used for querying databases that store the registered users or assignees of an Internet resource, such as a domain name or IP address block.",
+  "riskLevel": "info",
+  "binary": "/usr/bin/whois",
+  "commandTemplate": ["whois", "{{target}}"],
+  "argsSchema": [
+    {
+      "name": "target",
+      "displayName": "Domain or IP",
+      "description": "Domain name or IP address to lookup",
+      "type": "string",
+      "required": true,
+      "placeholder": "example.com or 192.0.2.1"
+    }
+  ],
+  "requiresScope": false,
+  "timeout": 30000,
+  "resourceLimits": {
+    "memory": "64Mi",
+    "cpu": "0.1",
+    "pidsLimit": 10
+  },
+  "outputParser": "whois-text",
+  "outputFormat": "text",
+  "redactionRules": [
+    { "pattern": "Admin Email:\\s*[^\\n]+", "replacement": "Admin Email: [REDACTED]", "caseSensitive": false },
+    { "pattern": "Tech Email:\\s*[^\\n]+", "replacement": "Tech Email: [REDACTED]", "caseSensitive": false }
+  ],
+  "readOnlyFilesystem": true,
+  "noNewPrivileges": true,
+  "networkMode": "restricted",
+  "prerequisites": [],
+  "safeUsageNotes": [
+    "WHOIS queries are passive and read-only",
+    "Information is publicly available"
+  ],
+  "exampleCommands": [
+    {
+      "description": "Domain registration lookup",
+      "parameters": { "target": "example.com" }
+    },
+    {
+      "description": "IP address ownership",
+      "parameters": { "target": "8.8.8.8" }
+    }
+  ],
+  "references": [
+    "https://www.icann.org/resources/pages/whois-2012-02-25-en"
+  ],
+  "tags": ["whois", "domain", "registration", "ownership", "inventory"]
+}
