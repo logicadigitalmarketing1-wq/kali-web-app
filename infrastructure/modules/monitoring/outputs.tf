@@ -19,9 +19,9 @@ output "dashboard_url" {
 output "alarm_arns" {
   description = "Map of alarm ARNs"
   value = {
-    ecs_cpu       = aws_cloudwatch_metric_alarm.ecs_cpu.arn
-    ecs_memory    = aws_cloudwatch_metric_alarm.ecs_memory.arn
-    rds_cpu       = var.rds_instance_id != null ? aws_cloudwatch_metric_alarm.rds_cpu[0].arn : null
-    alb_5xx       = var.alb_arn_suffix != null ? aws_cloudwatch_metric_alarm.alb_5xx[0].arn : null
+    ecs_cpu    = aws_cloudwatch_metric_alarm.ecs_cpu.arn
+    ecs_memory = aws_cloudwatch_metric_alarm.ecs_memory.arn
+    rds_cpu    = var.rds_instance_id != null ? aws_cloudwatch_metric_alarm.rds_cpu[0].arn : null
+    alb_5xx    = var.alb_arn_suffix != null ? aws_cloudwatch_metric_alarm.alb_5xx[0].arn : null
   }
 }

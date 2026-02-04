@@ -46,9 +46,9 @@ resource "aws_secretsmanager_secret" "app_secrets" {
 resource "aws_secretsmanager_secret_version" "app_secrets" {
   secret_id = aws_secretsmanager_secret.app_secrets.id
   secret_string = jsonencode({
-    SESSION_SECRET     = var.session_secret
-    ANTHROPIC_API_KEY  = var.anthropic_api_key
-    TOTP_ISSUER        = "UgoPentesting"
+    SESSION_SECRET    = var.session_secret
+    ANTHROPIC_API_KEY = var.anthropic_api_key
+    TOTP_ISSUER       = "UgoPentesting"
   })
 }
 

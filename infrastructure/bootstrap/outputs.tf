@@ -28,7 +28,7 @@ output "ci_cd_policy_arn" {
 
 output "backend_config" {
   description = "Backend configuration to use in other Terraform configurations"
-  value = <<-EOT
+  value       = <<-EOT
     terraform {
       backend "s3" {
         bucket         = "${aws_s3_bucket.terraform_state.id}"

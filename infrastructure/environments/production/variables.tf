@@ -18,13 +18,13 @@ variable "anthropic_api_key" {
 variable "rds_instance_class" {
   description = "RDS instance class"
   type        = string
-  default     = "db.t3.small"  # Larger for production
+  default     = "db.t3.small" # Larger for production
 }
 
 variable "rds_allocated_storage" {
   description = "RDS allocated storage (GB)"
   type        = number
-  default     = 50  # More storage for production
+  default     = 50 # More storage for production
 }
 
 variable "rds_max_allocated_storage" {
@@ -37,20 +37,20 @@ variable "rds_max_allocated_storage" {
 variable "redis_node_type" {
   description = "ElastiCache node type"
   type        = string
-  default     = "cache.t3.small"  # Larger for production
+  default     = "cache.t3.small" # Larger for production
 }
 
 # Compute
 variable "ecs_instance_type" {
   description = "ECS EC2 instance type"
   type        = string
-  default     = "t3.large"  # Larger for production
+  default     = "t3.large" # Larger for production
 }
 
 variable "hexstrike_instance_type" {
   description = "HexStrike EC2 instance type"
   type        = string
-  default     = "t3.large"  # Larger for production
+  default     = "t3.large" # Larger for production
 }
 
 # Alerts

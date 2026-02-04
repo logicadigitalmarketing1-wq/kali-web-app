@@ -79,8 +79,8 @@ resource "aws_db_instance" "main" {
   performance_insights_retention_period = var.performance_insights_enabled ? 7 : null
 
   # Deletion protection
-  deletion_protection      = var.deletion_protection
-  skip_final_snapshot      = var.skip_final_snapshot
+  deletion_protection       = var.deletion_protection
+  skip_final_snapshot       = var.skip_final_snapshot
   final_snapshot_identifier = var.skip_final_snapshot ? null : "${var.project_name}-final-snapshot"
 
   # Copy tags to snapshots

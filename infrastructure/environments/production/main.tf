@@ -96,7 +96,7 @@ module "networking" {
   source = "../../modules/networking"
 
   project_name         = "${local.project_name}-${local.environment}"
-  vpc_cidr             = "10.1.0.0/16"  # Different CIDR from staging
+  vpc_cidr             = "10.1.0.0/16" # Different CIDR from staging
   availability_zones   = ["ca-central-1a", "ca-central-1b"]
   public_subnet_cidrs  = ["10.1.1.0/24", "10.1.2.0/24"]
   private_subnet_cidrs = ["10.1.10.0/24", "10.1.11.0/24"]
@@ -130,8 +130,8 @@ module "database" {
   instance_class        = var.rds_instance_class
   allocated_storage     = var.rds_allocated_storage
   max_allocated_storage = var.rds_max_allocated_storage
-  multi_az              = true  # Production: Multi-AZ enabled
-  backup_retention_days = 14    # Production: Longer retention
+  multi_az              = true # Production: Multi-AZ enabled
+  backup_retention_days = 14   # Production: Longer retention
   master_password       = random_password.db_password.result
   deletion_protection   = true  # Production: Deletion protection enabled
   skip_final_snapshot   = false # Production: Keep final snapshot
@@ -146,7 +146,7 @@ module "cache" {
   subnet_ids         = module.networking.private_subnet_ids
   security_group_id  = module.networking.redis_security_group_id
   node_type          = var.redis_node_type
-  num_cache_clusters = 2  # Production: Replica for HA
+  num_cache_clusters = 2 # Production: Replica for HA
   tags               = local.common_tags
 }
 
@@ -159,7 +159,7 @@ module "loadbalancer" {
   public_subnet_ids   = module.networking.public_subnet_ids
   security_group_id   = module.networking.alb_security_group_id
   certificate_arn     = module.dns.certificate_arn
-  deletion_protection = true  # Production: Deletion protection enabled
+  deletion_protection = true # Production: Deletion protection enabled
   api_subdomain       = "api.${local.domain_name}"
   tags                = local.common_tags
 }
@@ -204,10 +204,10 @@ module "compute" {
   ecs_instance_type       = var.ecs_instance_type
   ecs_min_size            = 1
   ecs_max_size            = 5
-  ecs_desired_capacity    = 2  # Production: Start with 2 instances
+  ecs_desired_capacity    = 2 # Production: Start with 2 instances
   hexstrike_instance_type = var.hexstrike_instance_type
-  web_desired_count       = 2  # Production: 2 web replicas
-  api_desired_count       = 2  # Production: 2 API replicas
+  web_desired_count       = 2 # Production: 2 web replicas
+  api_desired_count       = 2 # Production: 2 API replicas
   tags                    = local.common_tags
 
   depends_on = [module.secrets]
