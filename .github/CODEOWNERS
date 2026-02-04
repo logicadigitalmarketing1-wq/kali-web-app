@@ -1,0 +1,18 @@
+# Ugo Pentesting - Code Owners
+# ============================
+# These owners will be requested for review when someone opens a pull request.
+
+# Default owners for everything
+*       @ugowork
+
+# Infrastructure changes require extra review
+/infrastructure/        @ugowork
+/.github/workflows/     @ugowork
+
+# Security-related code
+/packages/api/src/auth/         @ugowork
+/packages/api/src/common/guards/ @ugowork
+/hexstrike-ai/                  @ugowork
+
+# Database schema changes
+/packages/api/prisma/           @ugowork

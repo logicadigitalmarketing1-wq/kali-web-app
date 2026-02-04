@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Database
+*.db
+*.sqlite
+
+# Prisma
+packages/api/prisma/migrations/**/migration_lock.toml
+
+# Docker
+docker-compose.override.yml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Secrets
+*.pem
+*.key
+credentials.json
+token.json
+
+# Temp
+.tmp/
+tmp/
+temp/
+
+# Data directory (used by Docker volumes)
+data/postgres/
+data/redis/
+
+# Terraform
+infrastructure/**/.terraform/
+infrastructure/**/*.tfstate
+infrastructure/**/*.tfstate.*
+infrastructure/**/*.tfvars
+!infrastructure/**/*.tfvars.example
+infrastructure/**/crash.log
+infrastructure/**/.terraform.lock.hcl
+infrastructure/**/override.tf
+infrastructure/**/override.tf.json
+infrastructure/**/*_override.tf
+infrastructure/**/*_override.tf.json
+
+# Terraform plans
+*.tfplan
+
+# HexStrike logs (can be large)
+hexstrike-ai/*.log

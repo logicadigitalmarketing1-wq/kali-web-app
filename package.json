@@ -1,0 +1,26 @@
+{
+  "name": "hexstrike-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HexStrike Security Platform - Web UI for security assessments",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "start": "pnpm -r start",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:migrate": "pnpm --filter @hexstrike/api db:migrate",
+    "db:seed": "pnpm --filter @hexstrike/api db:seed",
+    "db:studio": "pnpm --filter @hexstrike/api db:studio",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "clean": "pnpm -r clean && rm -rf node_modules"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

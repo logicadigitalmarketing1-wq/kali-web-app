@@ -1,0 +1,155 @@
+# HexStrike Security Platform - Docker Compose
+# =============================================
+# Run with: docker-compose up -d
+
+services:
+  # ===========================================
+  # PostgreSQL Database
+  # ===========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: hexstrike-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hexstrike}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hexstrike_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-hexstrike_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hexstrike -d hexstrike_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # Redis (Queue & Cache)
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: hexstrike-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # HexStrike AI MCP (Kali Linux)
+  # ===========================================
+  kali-hexstrike:
+    image: kalilinux/kali-rolling
+    container_name: kali-hexstrike
+    hostname: hexstrike
+    restart: unless-stopped
+    volumes:
+      - ./hexstrike-ai:/opt/hexstrike-ai
+      - ./data:/data
+    ports:
+      - "8888:8888"
+    environment:
+      - TERM=xterm-256color
+      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/root/go/bin:/root/.cargo/bin
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
+    tty: true
+    stdin_open: true
+    working_dir: /opt/hexstrike-ai
+    command: >
+      bash -c "
+        echo '=== Starting Kali HexStrike Setup ===' &&
+        apt-get update &&
+        apt-get install -y python3 python3-pip python3-venv python3-dev python3-netifaces build-essential gcc g++ libffi-dev libssl-dev chromium chromium-driver &&
+        echo '=== Installing Security Tools (150+ tools) ===' &&
+        bash /opt/hexstrike-ai/install-tools.sh &&
+        echo '=== Security Tools Installation Complete ===' &&
+        python3 -m venv /opt/hexstrike-env &&
+        . /opt/hexstrike-env/bin/activate &&
+        pip install --upgrade pip wheel setuptools &&
+        pip install -r /opt/hexstrike-ai/requirements.txt &&
+        echo '=== HexStrike Dependencies Installed ===' &&
+        echo '=== Starting HexStrike Server ===' &&
+        python3 /opt/hexstrike-ai/hexstrike_server.py
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 600s  # 10 minutes for tools installation
+
+  # ===========================================
+  # NestJS API (Development)
+  # ===========================================
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    container_name: hexstrike-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://hexstrike:hexstrike_secret@postgres:5432/hexstrike_db
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - API_PORT=4000
+      - HEXSTRIKE_URL=http://kali-hexstrike:8888
+      - SESSION_SECRET=${SESSION_SECRET:-your-secret-key-min-32-characters-long}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CORS_ORIGIN=http://localhost:3000
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./packages/api:/app
+      - /app/node_modules
+    command: pnpm dev
+    profiles:
+      - full
+
+  # ===========================================
+  # Next.js Frontend (Development)
+  # ===========================================
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+    container_name: hexstrike-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:4000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./packages/web:/app
+      - /app/node_modules
+      - /app/.next
+    command: pnpm dev
+    profiles:
+      - full
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: hexstrike-network
