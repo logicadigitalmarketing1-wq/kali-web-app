@@ -153,6 +153,8 @@ jobs:
       - name: Terraform Plan
         id: plan
         working-directory: infrastructure/environments/${{ needs.determine-environment.outputs.environment }}
+        env:
+          TF_VAR_anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           terraform plan -no-color -out=tfplan 2>&1 | tee plan_output.txt
           echo "plan_output<<EOF" >> $GITHUB_OUTPUT
@@ -222,4 +224,6 @@ jobs:
 
       - name: Terraform Apply
         working-directory: infrastructure/environments/${{ needs.determine-environment.outputs.environment }}
+        env:
+          TF_VAR_anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
         run: terraform apply -auto-approve tfplan
