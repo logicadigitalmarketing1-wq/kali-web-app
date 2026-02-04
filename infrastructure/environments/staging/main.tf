@@ -114,6 +114,7 @@ module "dns" {
 
   domain_name            = local.domain_name
   create_cloudfront_cert = false
+  create_alb_records     = !var.first_apply
   staging_alb_dns_name   = module.loadbalancer.alb_dns_name
   staging_alb_zone_id    = module.loadbalancer.alb_zone_id
   tags                   = local.common_tags
@@ -216,6 +217,7 @@ module "monitoring" {
   rds_instance_id  = module.database.id
   alb_arn_suffix   = split("/", module.loadbalancer.alb_arn)[2]
   alert_email      = var.alert_email
+  create_alarms    = !var.first_apply
   tags             = local.common_tags
 }
 

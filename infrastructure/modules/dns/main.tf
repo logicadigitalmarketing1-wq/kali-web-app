@@ -89,7 +89,7 @@ resource "aws_acm_certificate_validation" "cloudfront" {
 
 # Apex domain -> ALB (Production)
 resource "aws_route53_record" "apex" {
-  count = var.alb_dns_name != null ? 1 : 0
+  count = var.create_alb_records && var.alb_dns_name != null ? 1 : 0
 
   zone_id = aws_route53_zone.main.zone_id
   name    = var.domain_name
@@ -104,7 +104,7 @@ resource "aws_route53_record" "apex" {
 
 # www -> redirect to apex
 resource "aws_route53_record" "www" {
-  count = var.alb_dns_name != null ? 1 : 0
+  count = var.create_alb_records && var.alb_dns_name != null ? 1 : 0
 
   zone_id = aws_route53_zone.main.zone_id
   name    = "www.${var.domain_name}"
@@ -119,7 +119,7 @@ resource "aws_route53_record" "www" {
 
 # api.domain -> ALB
 resource "aws_route53_record" "api" {
-  count = var.alb_dns_name != null ? 1 : 0
+  count = var.create_alb_records && var.alb_dns_name != null ? 1 : 0
 
   zone_id = aws_route53_zone.main.zone_id
   name    = "api.${var.domain_name}"
@@ -134,7 +134,7 @@ resource "aws_route53_record" "api" {
 
 # staging.domain -> Staging ALB
 resource "aws_route53_record" "staging" {
-  count = var.staging_alb_dns_name != null ? 1 : 0
+  count = var.create_alb_records && var.staging_alb_dns_name != null ? 1 : 0
 
   zone_id = aws_route53_zone.main.zone_id
   name    = "staging.${var.domain_name}"
@@ -149,7 +149,7 @@ resource "aws_route53_record" "staging" {
 
 # api.staging.domain -> Staging ALB
 resource "aws_route53_record" "api_staging" {
-  count = var.staging_alb_dns_name != null ? 1 : 0
+  count = var.create_alb_records && var.staging_alb_dns_name != null ? 1 : 0
 
   zone_id = aws_route53_zone.main.zone_id
   name    = "api.staging.${var.domain_name}"

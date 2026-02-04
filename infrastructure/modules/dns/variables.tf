@@ -39,6 +39,12 @@ variable "staging_alb_zone_id" {
   default     = null
 }
 
+variable "create_alb_records" {
+  description = "Whether to create ALB DNS records (set false on first apply)"
+  type        = bool
+  default     = true
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)

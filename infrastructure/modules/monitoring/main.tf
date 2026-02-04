@@ -70,7 +70,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory" {
 # CloudWatch Alarms - RDS
 # =============================================
 resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
-  count = var.rds_instance_id != null ? 1 : 0
+  count = var.create_alarms && var.rds_instance_id != null ? 1 : 0
 
   alarm_name          = "${var.project_name}-rds-cpu-high"
   comparison_operator = "GreaterThanThreshold"
@@ -93,7 +93,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_connections" {
-  count = var.rds_instance_id != null ? 1 : 0
+  count = var.create_alarms && var.rds_instance_id != null ? 1 : 0
 
   alarm_name          = "${var.project_name}-rds-connections-high"
   comparison_operator = "GreaterThanThreshold"
@@ -116,7 +116,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_connections" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_storage" {
-  count = var.rds_instance_id != null ? 1 : 0
+  count = var.create_alarms && var.rds_instance_id != null ? 1 : 0
 
   alarm_name          = "${var.project_name}-rds-storage-low"
   comparison_operator = "LessThanThreshold"
@@ -142,7 +142,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_storage" {
 # CloudWatch Alarms - ALB
 # =============================================
 resource "aws_cloudwatch_metric_alarm" "alb_5xx" {
-  count = var.alb_arn_suffix != null ? 1 : 0
+  count = var.create_alarms && var.alb_arn_suffix != null ? 1 : 0
 
   alarm_name          = "${var.project_name}-alb-5xx-errors"
   comparison_operator = "GreaterThanThreshold"
@@ -167,7 +167,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "alb_response_time" {
-  count = var.alb_arn_suffix != null ? 1 : 0
+  count = var.create_alarms && var.alb_arn_suffix != null ? 1 : 0
 
   alarm_name          = "${var.project_name}-alb-response-time-high"
   comparison_operator = "GreaterThanThreshold"

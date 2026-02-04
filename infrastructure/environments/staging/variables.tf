@@ -59,3 +59,10 @@ variable "alert_email" {
   type        = string
   default     = null
 }
+
+# First apply flag - set to true to skip resources that depend on other resources
+variable "first_apply" {
+  description = "Set to true on first apply, then false for subsequent applies"
+  type        = bool
+  default     = false
+}

@@ -87,6 +87,12 @@ variable "alb_response_time_threshold" {
   default     = 2
 }
 
+variable "create_alarms" {
+  description = "Whether to create CloudWatch alarms (set false on first apply)"
+  type        = bool
+  default     = true
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)

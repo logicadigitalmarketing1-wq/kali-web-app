@@ -35,6 +35,14 @@ on:
         options:
           - plan
           - apply
+      first_apply:
+        description: 'First apply (skip DNS records and alarms)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 env:
   TF_VERSION: '1.7.5'
@@ -155,6 +163,7 @@ jobs:
         working-directory: infrastructure/environments/${{ needs.determine-environment.outputs.environment }}
         env:
           TF_VAR_anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          TF_VAR_first_apply: ${{ inputs.first_apply || 'false' }}
         run: |
           terraform plan -no-color -out=tfplan 2>&1 | tee plan_output.txt
           echo "plan_output<<EOF" >> $GITHUB_OUTPUT
@@ -226,4 +235,5 @@ jobs:
         working-directory: infrastructure/environments/${{ needs.determine-environment.outputs.environment }}
         env:
           TF_VAR_anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          TF_VAR_first_apply: ${{ inputs.first_apply || 'false' }}
         run: terraform apply -auto-approve tfplan
