@@ -250,9 +250,9 @@ resource "aws_cloudwatch_dashboard" "main" {
         properties = {
           title  = "ALB Request Count"
           region = var.aws_region
-          metrics = var.alb_arn_suffix != null ? [
+          metrics = var.alb_arn_suffix != null ? tolist([
             ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix]
-          ] : []
+          ]) : tolist([])
           period = 60
           stat   = "Sum"
         }
@@ -266,10 +266,10 @@ resource "aws_cloudwatch_dashboard" "main" {
         properties = {
           title  = "RDS CPU & Connections"
           region = var.aws_region
-          metrics = var.rds_instance_id != null ? [
+          metrics = var.rds_instance_id != null ? tolist([
             ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.rds_instance_id],
             [".", "DatabaseConnections", ".", "."]
-          ] : []
+          ]) : tolist([])
           period = 300
         }
       },
@@ -282,10 +282,10 @@ resource "aws_cloudwatch_dashboard" "main" {
         properties = {
           title  = "ALB Response Time (p50, p99)"
           region = var.aws_region
-          metrics = var.alb_arn_suffix != null ? [
+          metrics = var.alb_arn_suffix != null ? tolist([
             ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", var.alb_arn_suffix, { stat = "p50" }],
             ["...", { stat = "p99" }]
-          ] : []
+          ]) : tolist([])
           period = 300
         }
       }
