@@ -24,6 +24,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app/packages/web
 RUN pnpm build
 
+# Debug: show standalone structure
+RUN find .next/standalone -type f -name "*.js" | head -20
+
 FROM base AS runner
 WORKDIR /app
 
@@ -33,10 +36,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN groupadd --system --gid 1001 nodejs
 RUN useradd --system --uid 1001 nextjs
 
-# Copy standalone output - in monorepo, preserves structure with server.js at packages/web/
+# Copy standalone output
 COPY --from=builder /app/packages/web/.next/standalone ./
-COPY --from=builder /app/packages/web/.next/static ./packages/web/.next/static
-COPY --from=builder /app/packages/web/public ./packages/web/public
+COPY --from=builder /app/packages/web/.next/static ./.next/static
+COPY --from=builder /app/packages/web/public ./public
+
+# Debug: show what was copied
+RUN find . -maxdepth 3 -type f -name "*.js" | head -10
 
 USER nextjs
 
@@ -45,5 +51,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# In monorepo standalone output, server.js is at packages/web/server.js
-CMD ["node", "packages/web/server.js"]
+# Try server.js at root (standard standalone)
+CMD ["node", "server.js"]
