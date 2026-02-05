@@ -195,22 +195,26 @@ resource "aws_cloudwatch_metric_alarm" "alb_response_time" {
 # CloudWatch Dashboard
 # =============================================
 
-# Pre-compute metric arrays - use jsondecode(jsonencode()) to force dynamic typing
-# This avoids "inconsistent conditional result types" errors
+# Pre-compute metric arrays using coalesce to avoid type mismatches
+# Metrics will show no data when the underlying resource doesn't exist
 locals {
-  alb_request_metrics = var.alb_arn_suffix != null ? jsondecode(jsonencode([
-    ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix]
-  ])) : []
+  # Use coalesce to provide placeholder values - metrics will be empty if resource doesn't exist
+  alb_suffix_safe = coalesce(var.alb_arn_suffix, "placeholder")
+  rds_id_safe     = coalesce(var.rds_instance_id, "placeholder")
 
-  rds_metrics = var.rds_instance_id != null ? jsondecode(jsonencode([
-    ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.rds_instance_id],
+  alb_request_metrics = [
+    ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", local.alb_suffix_safe]
+  ]
+
+  rds_metrics = [
+    ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", local.rds_id_safe],
     [".", "DatabaseConnections", ".", "."]
-  ])) : []
+  ]
 
-  alb_response_metrics = var.alb_arn_suffix != null ? jsondecode(jsonencode([
-    ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", var.alb_arn_suffix, { stat = "p50" }],
+  alb_response_metrics = [
+    ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", local.alb_suffix_safe, { stat = "p50" }],
     ["...", { stat = "p99" }]
-  ])) : []
+  ]
 }
 
 resource "aws_cloudwatch_dashboard" "main" {
