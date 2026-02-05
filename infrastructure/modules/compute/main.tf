@@ -251,7 +251,7 @@ resource "aws_ecs_task_definition" "api" {
       { name = "NODE_ENV", value = var.environment },
       { name = "API_PORT", value = "4000" },
       { name = "REDIS_URL", value = var.redis_url },
-      { name = "HEXSTRIKE_URL", value = "http://${var.hexstrike_private_ip}:8888" }
+      { name = "HEXSTRIKE_URL", value = "http://${aws_instance.hexstrike.private_ip}:8888" }
     ]
     secrets = [
       { name = "DATABASE_URL", valueFrom = "${var.db_credentials_arn}:connection_string::" },
@@ -288,7 +288,7 @@ resource "aws_ecs_task_definition" "executor" {
     environment = [
       { name = "NODE_ENV", value = var.environment },
       { name = "REDIS_URL", value = var.redis_url },
-      { name = "HEXSTRIKE_URL", value = "http://${var.hexstrike_private_ip}:8888" }
+      { name = "HEXSTRIKE_URL", value = "http://${aws_instance.hexstrike.private_ip}:8888" }
     ]
     logConfiguration = {
       logDriver = "awslogs"
