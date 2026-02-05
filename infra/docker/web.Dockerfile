@@ -15,6 +15,10 @@ RUN pnpm install --frozen-lockfile --filter @hexstrike/web...
 FROM base AS builder
 WORKDIR /app
 
+# Build-time arg for Next.js public env vars (required at build time)
+ARG NEXT_PUBLIC_API_URL=http://localhost:4000
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages/web/node_modules ./packages/web/node_modules
 COPY packages/web ./packages/web
