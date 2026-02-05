@@ -195,22 +195,22 @@ resource "aws_cloudwatch_metric_alarm" "alb_response_time" {
 # CloudWatch Dashboard
 # =============================================
 
-# Pre-compute metric arrays to avoid type mismatches in conditionals
+# Pre-compute metric arrays - use jsondecode(jsonencode()) to force dynamic typing
+# This avoids "inconsistent conditional result types" errors
 locals {
-  alb_request_metrics = var.alb_arn_suffix != null ? [
+  alb_request_metrics = var.alb_arn_suffix != null ? jsondecode(jsonencode([
     ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix]
-  ] : []
+  ])) : []
 
-  rds_metrics = var.rds_instance_id != null ? [
+  rds_metrics = var.rds_instance_id != null ? jsondecode(jsonencode([
     ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.rds_instance_id],
     [".", "DatabaseConnections", ".", "."]
-  ] : []
+  ])) : []
 
-  # Use concat to build variable-length list without type mismatch
-  alb_response_metrics = var.alb_arn_suffix != null ? concat(
-    [["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", var.alb_arn_suffix, { stat = "p50" }]],
-    [["...", { stat = "p99" }]]
-  ) : []
+  alb_response_metrics = var.alb_arn_suffix != null ? jsondecode(jsonencode([
+    ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", var.alb_arn_suffix, { stat = "p50" }],
+    ["...", { stat = "p99" }]
+  ])) : []
 }
 
 resource "aws_cloudwatch_dashboard" "main" {
