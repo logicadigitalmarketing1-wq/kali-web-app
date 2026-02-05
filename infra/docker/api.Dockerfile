@@ -32,13 +32,6 @@ ENV PATH="/app/node_modules/.bin:/app/packages/api/node_modules/.bin:$PATH"
 RUN prisma generate
 RUN nest build
 
-# Use pnpm deploy to create a standalone production deployment
-RUN mkdir -p /deploy
-RUN pnpm --filter @hexstrike/api deploy --prod /deploy
-
-# Regenerate Prisma client in the deploy directory
-RUN cd /deploy && npx prisma@5.22.0 generate
-
 FROM base AS runner
 WORKDIR /app
 
@@ -47,11 +40,16 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
-# Copy the deployed standalone application with generated Prisma client
-COPY --from=builder /deploy/node_modules ./node_modules
+# Copy built output and package files
 COPY --from=builder /app/packages/api/dist ./dist
-COPY --from=builder /deploy/prisma ./prisma
-COPY --from=builder /deploy/package.json ./
+COPY --from=builder /app/packages/api/package.json ./
+COPY --from=builder /app/packages/api/prisma ./prisma
+
+# Install production dependencies with npm (not pnpm) to avoid symlink issues
+RUN npm install --omit=dev --ignore-scripts
+
+# Generate Prisma client in the final stage
+RUN npx prisma generate
 
 USER nestjs
 
