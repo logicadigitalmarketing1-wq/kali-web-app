@@ -1,5 +1,5 @@
 # HexStrike API Dockerfile
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 
 RUN npm install -g pnpm@9
 
@@ -37,11 +37,16 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install build dependencies for native modules (argon2)
-RUN apk add --no-cache python3 make g++
+# Install build dependencies for native modules (argon2) and OpenSSL for Prisma
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nestjs
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 nestjs
 
 # Copy built output and package files
 COPY --from=builder /app/packages/api/dist ./dist
@@ -55,7 +60,7 @@ RUN npm install --omit=dev
 RUN npx prisma generate
 
 # Remove build dependencies to reduce image size
-RUN apk del python3 make g++
+RUN apt-get purge -y python3 make g++ && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 USER nestjs
 

@@ -250,6 +250,7 @@ resource "aws_ecs_task_definition" "api" {
     environment = [
       { name = "NODE_ENV", value = var.environment },
       { name = "API_PORT", value = "4000" },
+      { name = "REDIS_URL", value = var.redis_url },
       { name = "HEXSTRIKE_URL", value = "http://${var.hexstrike_private_ip}:8888" }
     ]
     secrets = [
