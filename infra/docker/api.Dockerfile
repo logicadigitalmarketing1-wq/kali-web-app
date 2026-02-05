@@ -37,6 +37,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Install build dependencies for native modules (argon2)
+RUN apk add --no-cache python3 make g++
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
@@ -45,11 +48,14 @@ COPY --from=builder /app/packages/api/dist ./dist
 COPY --from=builder /app/packages/api/package.json ./
 COPY --from=builder /app/packages/api/prisma ./prisma
 
-# Install production dependencies with npm (not pnpm) to avoid symlink issues
-RUN npm install --omit=dev --ignore-scripts
+# Install production dependencies with npm (allow scripts for native modules)
+RUN npm install --omit=dev
 
 # Generate Prisma client in the final stage
 RUN npx prisma generate
+
+# Remove build dependencies to reduce image size
+RUN apk del python3 make g++
 
 USER nestjs
 
