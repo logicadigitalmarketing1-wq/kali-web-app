@@ -1,5 +1,5 @@
 # HexStrike Web Dockerfile
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 
 RUN npm install -g pnpm@9
 
@@ -30,12 +30,17 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 nextjs
 
+# Copy built output and package files
 COPY --from=builder /app/packages/web/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/packages/web/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/packages/web/.next/static ./.next/static
+COPY --from=builder /app/packages/web/.next/standalone ./
+COPY --from=builder /app/packages/web/.next/static ./.next/static
+COPY --from=builder /app/packages/web/package.json ./
+
+# Install production dependencies for any modules not in standalone
+RUN npm install --omit=dev 2>/dev/null || true
 
 USER nextjs
 

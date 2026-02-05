@@ -1,5 +1,5 @@
 # HexStrike Executor Dockerfile
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 
 RUN npm install -g pnpm@9
 
@@ -27,12 +27,15 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 executor
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 executor
 
+# Copy built output and package files
 COPY --from=builder /app/packages/executor/dist ./dist
-COPY --from=builder /app/packages/executor/node_modules ./node_modules
 COPY --from=builder /app/packages/executor/package.json ./
+
+# Install production dependencies with npm (not pnpm) to avoid symlink issues
+RUN npm install --omit=dev
 
 USER executor
 
