@@ -1,4 +1,4 @@
-# HexStrike Web Dockerfile
+# HexStrike Web Dockerfile - Full build (not standalone)
 FROM node:20-slim AS base
 
 RUN npm install -g pnpm@9
@@ -9,6 +9,7 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY packages/web/package.json ./packages/web/
 
+# Install all dependencies including devDependencies for build
 RUN pnpm install --frozen-lockfile --filter @hexstrike/web...
 
 FROM base AS builder
@@ -24,9 +25,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app/packages/web
 RUN pnpm build
 
-# Debug: show standalone structure
-RUN find .next/standalone -type f -name "*.js" | head -20
-
 FROM base AS runner
 WORKDIR /app
 
@@ -36,13 +34,14 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN groupadd --system --gid 1001 nodejs
 RUN useradd --system --uid 1001 nextjs
 
-# Copy standalone output
-COPY --from=builder /app/packages/web/.next/standalone ./
-COPY --from=builder /app/packages/web/.next/static ./.next/static
+# Copy the full built application
+COPY --from=builder /app/packages/web/.next ./.next
 COPY --from=builder /app/packages/web/public ./public
+COPY --from=builder /app/packages/web/package.json ./
+COPY --from=builder /app/packages/web/next.config.js ./
 
-# Debug: show what was copied
-RUN find . -maxdepth 3 -type f -name "*.js" | head -10
+# Install production dependencies fresh with npm
+RUN npm install --omit=dev
 
 USER nextjs
 
@@ -51,5 +50,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Try server.js at root (standard standalone)
-CMD ["node", "server.js"]
+# Use next start for production
+CMD ["npx", "next", "start"]
