@@ -216,7 +216,11 @@ export class AuthController {
       await this.authService.deleteSession(token).catch(() => {});
     }
 
-    (res as unknown as FastifyReplyWithCookies).clearCookie('session', { path: '/' });
+    const cookieDomain = process.env.COOKIE_DOMAIN;
+    (res as unknown as FastifyReplyWithCookies).clearCookie('session', {
+      path: '/',
+      ...(cookieDomain && { domain: cookieDomain }),
+    });
     return;
   }
 
@@ -358,12 +362,16 @@ export class AuthController {
     // @fastify/cookie adds setCookie method to reply
     // sameSite: 'lax' allows cookies to be sent with cross-origin GET requests (SSE)
     // while still protecting against CSRF for POST/PUT/DELETE
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieDomain = process.env.COOKIE_DOMAIN; // e.g., '.ugopentesting.ca' for cross-subdomain
+
     (res as unknown as FastifyReplyWithCookies).setCookie('session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-subdomain with secure
       path: '/',
       maxAge: 24 * 60 * 60, // 24 hours
+      ...(cookieDomain && { domain: cookieDomain }),
     });
   }
 }
