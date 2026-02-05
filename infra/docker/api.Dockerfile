@@ -36,6 +36,9 @@ RUN nest build
 RUN mkdir -p /deploy
 RUN pnpm --filter @hexstrike/api deploy --prod /deploy
 
+# Regenerate Prisma client in the deploy directory
+RUN cd /deploy && npx prisma@5.22.0 generate
+
 FROM base AS runner
 WORKDIR /app
 
@@ -44,7 +47,7 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
-# Copy the deployed standalone application
+# Copy the deployed standalone application with generated Prisma client
 COPY --from=builder /deploy/node_modules ./node_modules
 COPY --from=builder /app/packages/api/dist ./dist
 COPY --from=builder /deploy/prisma ./prisma
