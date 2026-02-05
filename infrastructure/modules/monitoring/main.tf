@@ -194,6 +194,25 @@ resource "aws_cloudwatch_metric_alarm" "alb_response_time" {
 # =============================================
 # CloudWatch Dashboard
 # =============================================
+
+# Pre-compute metric arrays to avoid type mismatches in conditionals
+locals {
+  alb_request_metrics = var.alb_arn_suffix != null ? [
+    ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix]
+  ] : []
+
+  rds_metrics = var.rds_instance_id != null ? [
+    ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.rds_instance_id],
+    [".", "DatabaseConnections", ".", "."]
+  ] : []
+
+  # Use concat to build variable-length list without type mismatch
+  alb_response_metrics = var.alb_arn_suffix != null ? concat(
+    [["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", var.alb_arn_suffix, { stat = "p50" }]],
+    [["...", { stat = "p99" }]]
+  ) : []
+}
+
 resource "aws_cloudwatch_dashboard" "main" {
   dashboard_name = "${var.project_name}-dashboard"
 
@@ -248,13 +267,11 @@ resource "aws_cloudwatch_dashboard" "main" {
         width  = 8
         height = 6
         properties = {
-          title  = "ALB Request Count"
-          region = var.aws_region
-          metrics = var.alb_arn_suffix != null ? [
-            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix]
-          ] : []
-          period = 60
-          stat   = "Sum"
+          title   = "ALB Request Count"
+          region  = var.aws_region
+          metrics = local.alb_request_metrics
+          period  = 60
+          stat    = "Sum"
         }
       },
       {
@@ -264,13 +281,10 @@ resource "aws_cloudwatch_dashboard" "main" {
         width  = 12
         height = 6
         properties = {
-          title  = "RDS CPU & Connections"
-          region = var.aws_region
-          metrics = var.rds_instance_id != null ? [
-            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.rds_instance_id],
-            [".", "DatabaseConnections", ".", "."]
-          ] : []
-          period = 300
+          title   = "RDS CPU & Connections"
+          region  = var.aws_region
+          metrics = local.rds_metrics
+          period  = 300
         }
       },
       {
@@ -280,13 +294,10 @@ resource "aws_cloudwatch_dashboard" "main" {
         width  = 12
         height = 6
         properties = {
-          title  = "ALB Response Time (p50, p99)"
-          region = var.aws_region
-          metrics = var.alb_arn_suffix != null ? [
-            ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", var.alb_arn_suffix, { stat = "p50" }],
-            ["...", { stat = "p99" }]
-          ] : []
-          period = 300
+          title   = "ALB Response Time (p50, p99)"
+          region  = var.aws_region
+          metrics = local.alb_response_metrics
+          period  = 300
         }
       }
     ]
