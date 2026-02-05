@@ -81,13 +81,15 @@ resource "random_password" "session_secret" {
 # Modules
 # =============================================
 
-# ECR (shared across environments)
-module "ecr" {
-  source = "../../modules/ecr"
-
-  project_name     = local.project_name
-  repository_names = ["web", "api", "executor", "hexstrike"]
-  tags             = local.common_tags
+# ECR repositories already created manually - use data sources
+locals {
+  ecr_registry = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
+  ecr_repository_urls = {
+    web       = "${local.ecr_registry}/${local.project_name}/web"
+    api       = "${local.ecr_registry}/${local.project_name}/api"
+    executor  = "${local.ecr_registry}/${local.project_name}/executor"
+    hexstrike = "${local.ecr_registry}/${local.project_name}/hexstrike"
+  }
 }
 
 # Networking
@@ -190,7 +192,7 @@ module "compute" {
   ecs_security_group_id       = module.networking.ecs_security_group_id
   hexstrike_security_group_id = module.networking.hexstrike_security_group_id
   ecr_registry                = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
-  ecr_repository_urls         = module.ecr.repository_urls
+  ecr_repository_urls         = local.ecr_repository_urls
   web_target_group_arn        = module.loadbalancer.web_target_group_arn
   api_target_group_arn        = module.loadbalancer.api_target_group_arn
   secrets_read_policy_arn     = module.secrets.secrets_read_policy_arn
