@@ -251,7 +251,9 @@ resource "aws_ecs_task_definition" "api" {
       { name = "NODE_ENV", value = var.environment },
       { name = "API_PORT", value = "4000" },
       { name = "REDIS_URL", value = var.redis_url },
-      { name = "HEXSTRIKE_URL", value = "http://${aws_instance.hexstrike.private_ip}:8888" }
+      { name = "HEXSTRIKE_URL", value = "http://${aws_instance.hexstrike.private_ip}:8888" },
+      { name = "CORS_ORIGIN", value = var.cors_origin },
+      { name = "COOKIE_DOMAIN", value = var.cookie_domain }
     ]
     secrets = [
       { name = "DATABASE_URL", valueFrom = "${var.db_credentials_arn}:connection_string::" },

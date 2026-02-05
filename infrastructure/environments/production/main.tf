@@ -200,6 +200,8 @@ module "compute" {
   db_credentials_arn      = module.secrets.db_credentials_arn
   app_secrets_arn         = module.secrets.app_secrets_arn
   api_url                 = "https://api.${local.domain_name}"
+  cors_origin             = "https://${local.domain_name}"
+  cookie_domain           = ".${local.domain_name}"
   redis_url               = module.cache.connection_string
   ecs_instance_type       = var.ecs_instance_type
   ecs_min_size            = 1

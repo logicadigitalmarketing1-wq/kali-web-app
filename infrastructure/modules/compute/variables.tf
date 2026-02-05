@@ -78,6 +78,17 @@ variable "api_url" {
   type        = string
 }
 
+variable "cors_origin" {
+  description = "CORS origin for API (frontend URL)"
+  type        = string
+}
+
+variable "cookie_domain" {
+  description = "Cookie domain for cross-subdomain auth (e.g., '.ugopentesting.ca')"
+  type        = string
+  default     = ""
+}
+
 variable "redis_url" {
   description = "Redis connection URL"
   type        = string
