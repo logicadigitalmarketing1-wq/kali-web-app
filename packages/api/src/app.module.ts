@@ -4,6 +4,26 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bullmq';
 
 import { PrismaModule } from './prisma/prisma.module';
+
+// Parse REDIS_URL if provided, otherwise use REDIS_HOST/REDIS_PORT
+function getRedisConfig(): { host: string; port: number } {
+  const redisUrl = process.env.REDIS_URL;
+  if (redisUrl) {
+    try {
+      const url = new URL(redisUrl);
+      return {
+        host: url.hostname,
+        port: parseInt(url.port || '6379', 10),
+      };
+    } catch {
+      // Fall through to defaults if URL parsing fails
+    }
+  }
+  return {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379', 10),
+  };
+}
 import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -46,10 +66,7 @@ import { SmartScanModule } from './smart-scan/smart-scan.module';
 
     // Job queue
     BullModule.forRoot({
-      connection: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      },
+      connection: getRedisConfig(),
     }),
 
     // Core modules
