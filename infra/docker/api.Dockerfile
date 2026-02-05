@@ -9,19 +9,26 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY packages/api/package.json ./packages/api/
 
-RUN pnpm install --frozen-lockfile --filter @hexstrike/api
+RUN pnpm install --frozen-lockfile --filter @hexstrike/api...
 
 FROM base AS builder
 WORKDIR /app
 
+# Copy node_modules from deps
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages/api/node_modules ./packages/api/node_modules
+
+# Copy source and config files
 COPY packages/api ./packages/api
 COPY package.json pnpm-workspace.yaml ./
 
 WORKDIR /app/packages/api
-RUN pnpm prisma generate
-RUN pnpm build
+
+# Add node_modules/.bin to PATH for CLI tools (nest, prisma)
+ENV PATH="/app/node_modules/.bin:/app/packages/api/node_modules/.bin:$PATH"
+
+RUN prisma generate
+RUN nest build
 
 FROM base AS runner
 WORKDIR /app
