@@ -9,7 +9,7 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY packages/web/package.json ./packages/web/
 
-RUN pnpm install --frozen-lockfile --filter @hexstrike/web
+RUN pnpm install --frozen-lockfile --filter @hexstrike/web...
 
 FROM base AS builder
 WORKDIR /app
@@ -33,14 +33,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN groupadd --system --gid 1001 nodejs
 RUN useradd --system --uid 1001 nextjs
 
-# Copy built output and package files
-COPY --from=builder /app/packages/web/public ./public
+# Copy standalone output - in monorepo, preserves structure with server.js at packages/web/
 COPY --from=builder /app/packages/web/.next/standalone ./
-COPY --from=builder /app/packages/web/.next/static ./.next/static
-COPY --from=builder /app/packages/web/package.json ./
-
-# Install production dependencies for any modules not in standalone
-RUN npm install --omit=dev 2>/dev/null || true
+COPY --from=builder /app/packages/web/.next/static ./packages/web/.next/static
+COPY --from=builder /app/packages/web/public ./packages/web/public
 
 USER nextjs
 
@@ -49,4 +45,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+# In monorepo standalone output, server.js is at packages/web/server.js
+CMD ["node", "packages/web/server.js"]
